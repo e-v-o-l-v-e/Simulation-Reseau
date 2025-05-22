@@ -1,5 +1,7 @@
 # SAE_S21
 
+#typedef mac unsigned char
+
 struct network {
 
     - graphe* g
@@ -46,4 +48,3 @@ struct association {
 
 }
 
-define mac unsigned char
