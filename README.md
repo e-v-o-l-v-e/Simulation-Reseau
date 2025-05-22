@@ -22,19 +22,19 @@ struct arete {
 
 struct machine {
 
-    - uint type (0 : station, 1 : switch, 2 : hub)
+    - uint type (1 : station, 2 : switch, 0 : hub)
 
     - char[32] nom
 
-    - mac adr_mac         //0, 1
+    - mac adr_mac         //1, 2
 
-    - uint32_t ip         //0
+    - uint32_t ip         //1
 
-    - int nb_ports        //1, 2
+    - int nb_ports        //0, 2
 
-    - uint priorite       //1
+    - uint priorite       //2
 
-    - association* table  //1
+    - association* table  //2
 
 }
 
