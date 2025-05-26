@@ -35,8 +35,9 @@ struct trame_ethernet {
     uint8_t sfd;
     mac dest;
     mac src;  
-    uint8_t type[2];
+    uint16_t type;
     uint8_t *data;
+    size_t data_length;
     uint8_t fcs[4];
 };
 
