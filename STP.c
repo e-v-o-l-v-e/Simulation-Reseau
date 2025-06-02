@@ -26,6 +26,12 @@ void receptionBPDU(Machine *sw, bpdu bpdu, uint port_reception, int poids) {
 }
 
 int stp(Network *net) {
+    // init des id root de chaque
+    for(size_t i=0; i<net->nbEquipements; i++){
+      if (net->equipements[i].type==2){
+        net->equipements[i].id_root = net->equipements[i].id;
+      }
+    }
 
     // cherche le root (echange de bpdu)
     bool continuer = true;
@@ -159,5 +165,6 @@ int stp(Network *net) {
 
     }
 
+    exit(EXIT_SUCCESS);
 
 }
