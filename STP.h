@@ -7,11 +7,10 @@
 #define SWITCH  2
 #define HUB     0
 
-typedef struct {
+typedef struct bpdu{
     int id_root;
     int id_envoie;
     int cout;
-    int port_envoie;
 } bpdu;
 
 typedef struct machine Machine;
@@ -33,17 +32,23 @@ struct machine {
     int nb_ports;
     unsigned int priorite;
     association *table;
+    size_t nbAsso;
 
     int id;
     int id_root;
     int cout;
-    int port_root;
-    int *etat_ports;       // 0 root - 1 désigné - 2 bloqué
+    uint port_root;
+    etat_port *etat_ports;
+};
+
+struct etat_port {
+  int etat=1;  //par defaut en mode designé // 0 root - 1 désigné - 2 bloqué
+  int id_connecte;  // id de la machine qui est connecte en face
 };
 
 
-bpdu creerBPDU(Machine switch, int port);
-void receptionBPDU(Machine *sw, bpdu bpdu, int port_reception, int poids);
-void stp(Network *net);
+bpdu creerBPDU(Machine switch);
+void receptionBPDU(Machine *sw, bpdu bpdu, uint port_reception, int poids);
+int stp(Network *net);
 
 #endif
