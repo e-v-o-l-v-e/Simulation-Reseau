@@ -21,7 +21,7 @@ void receptionBPDU(Machine *sw, bpdu bpdu, uint port_reception, int poids) {
         sw->id_root = bpdu.id_root;
         sw->etat_ports[port_reception] = 0;
         sw->cout = newCost;
-        sw->port_root = port_reception;     // inutile vu qu'on a dans etat_ports
+        sw->port_root = port_reception;
     }
 }
 
@@ -92,8 +92,8 @@ int stp(Network *net) {
                   }
                 }
 
-
-                receptionBPDU(&voisin, d, port, 1);
+                uint poids = poids_arete(net->g, i, sommet_adj[j]);
+                receptionBPDU(&voisin, d, port, poids);
               }
             }
 
