@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include "stdint.h"
 
 typedef size_t sommet;
 
@@ -11,6 +12,7 @@ typedef struct arete
 {
   sommet s1;
   sommet s2;
+  uint32_t poid;
 } arete;
 
 typedef struct graphe

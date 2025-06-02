@@ -97,34 +97,20 @@ bool existe_arete(graphe const *g, arete a)
 
 bool ajouter_arete(graphe *g, arete a)
 {
-    // l'arête a n'est ajoutée que si les conditions suivantes sont remplies :
-    //  - les sommets s1 et s2 de a existent dans g
-    //  - les sommets s1 et s2 de a sont distincts
-    //  - l'arête a n'existe pas dans g
-    // /!\ si la capacité actuelle du tableau d'arêtes n'est pas suffisante,
-    // /!\ il faut le réallouer.
-    // /!\ on peut par exemple doubler la capacité du tableau actuel.
-
-    // retourne true si l'arête a bien été ajoutée, false sinon
-
     normaliser_arete(&a);
     
-    //Si les deux sommets de l'arête sont les mêmes
     if(a.s1 == a.s2){
       return false;
     }
     
-    //Si les sommets n'existent pas dans g (s1 étant le plus petit, s'il n'est pas contenu s2 ne peut pas l'être)
     if(index_sommet(g, a.s1) == UNKNOWN_INDEX){
       return false;
     }
 
-    //Si l'arête existe dans g
     if(existe_arete(g, a)){
       return false;
     }
 
-    //Toutes les conditions sont réunies, alors on ajoute l'arête
     if(g->nb_aretes == g->aretes_capacite){
       arete* newTab = malloc(sizeof(arete) * g->aretes_capacite * 2);
       if(newTab == NULL){
@@ -188,3 +174,5 @@ size_t sommets_adjacents(graphe const *g, sommet s, sommet sa[])
 
     return degre;
 }
+
+
