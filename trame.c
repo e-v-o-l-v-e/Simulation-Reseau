@@ -1,14 +1,14 @@
 #include "trame.h"
+#include <stdlib.h>
 
 trame_ethernet init_trame(mac mac_src, mac mac_dest, uint16_t type, const char* message){
-   trame_ethernet t = {
-      .preambule = {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
-      .sfd = 0xAB,
-      .type = type,
-      .data_length = strlen(message) + 1,
-      .data = malloc(t.data_length),
-      .fcs = {0, 0, 0, 0}
-   };
+   trame_ethernet t;
+   memcpy(t.preambule, (uint8_t[]){0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA}, 7);
+   t.sfd = 0xAB;
+   t.type = type;
+   t.data_length = strlen(message) + 1;
+   t.data = malloc(t.data_length);
+   memset(t.fcs, 0, 4);
 
    memcpy(t.dest, mac_dest, 6);
    memcpy(t.src, mac_src, 6);
