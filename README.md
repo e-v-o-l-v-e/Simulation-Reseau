@@ -23,7 +23,21 @@ struct machine {
     int nb_ports        //0, 2
     uint priorite       //2
     association* table  //2
+    size_t nbAsso;      //2
+
+    int id;             //2
+    int id_root;        //2
+    int cout;           //2
+    uint port_root;     //2
+    etat_port *etat_ports; //2
 };
+
+struct etat_port {
+  int etat=1;  //par defaut en mode designé // 0 root - 1 désigné - 2 bloqué
+  int id_connecte;  // id de la machine qui est connecte en face
+};
+
+
 
 struct association {
     uint num_port

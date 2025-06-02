@@ -15,12 +15,6 @@ typedef struct bpdu{
 
 typedef struct machine Machine;
 
-//existait deja
-typedef struct association {
-    int port;
-    Machine *cible;
-    struct association *suivante;
-} association;
 
 
 //existait deja
