@@ -1,6 +1,7 @@
-int main(){
+#include "network.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-  
-
-  return 0;
+int main() {
+  creation_reseau();
 }
