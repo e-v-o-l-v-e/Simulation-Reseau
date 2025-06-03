@@ -1,17 +1,14 @@
 #include "STP.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 
-bpdu creerBPDU(Machine switch) {
+bpdu creerBPDU(machine sw) {
     bpdu b;
-    b.id_root = switch.id_root;
-    b.id_envoie = switch.id;
-    b.cout = switch.cout;
+    b.id_root = sw.id_root;
+    b.id_envoie = sw.id;
+    b.cout = sw.cout;
     return b;
 }
 
-void receptionBPDU(Machine *sw, bpdu bpdu, uint port_reception, int poids) {
+void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids) {
     int newCost = bpdu.cout + poids;
 
     if (bpdu.id_root < sw->id_root || (bpdu.id_root == sw->id_root &&
@@ -19,13 +16,13 @@ void receptionBPDU(Machine *sw, bpdu bpdu, uint port_reception, int poids) {
         newCost == sw->cout && bpdu.id_envoie < sw->port_root)) {
 
         sw->id_root = bpdu.id_root;
-        sw->etat_ports[port_reception] = 0;
+        sw->etat_ports[port_reception].etat = 0;
         sw->cout = newCost;
         sw->port_root = port_reception;
     }
 }
 
-int stp(Network *net) {
+int stp(network *net) {
     // init des id root de chaque
     for(size_t i=0; i<net->nbEquipements; i++){
       if (net->equipements[i].type==2){
@@ -41,7 +38,7 @@ int stp(Network *net) {
 
       if(tab_bpdu == NULL){
         printf("Erreur d'allocation memoire\n");
-        exit(EXIT_FAILLURE);
+        exit(EXIT_FAILURE);
       }
 
       size_t nbBPDU = 1;
@@ -56,7 +53,7 @@ int stp(Network *net) {
 
           if(tab_bpdu == NULL){
             printf("Erreur d'allocation memoire\n");
-            exit(EXIT_FAILLURE);
+            exit(EXIT_FAILURE);
           }
         }
 
@@ -76,10 +73,10 @@ int stp(Network *net) {
 
             if(sommet_adj == NULL){
               printf("Erreur d'allocation memoire\n");
-              exit(EXIT_FAILLURE);
+              exit(EXIT_FAILURE);
             }
 
-            size_t nb_adj = sommets_adjacents(net->g, sommet_adj);
+            size_t nb_adj = sommets_adjacents(net->g, i, sommet_adj);
             for(size_t j=0; j< nb_adj; j++){
               machine voisin = net->equipements[sommet_adj[j]];
               if(voisin.type == 2){
@@ -128,18 +125,18 @@ int stp(Network *net) {
 
       // changements etat des ports
       for (size_t i=0; i<net->nbEquipements; i++){
-        machine switch = net->equipements[i];
-        if (switch.type==2){
-          for (size_t j=0; j<switch.nb_ports; j++) {
+        machine sw = net->equipements[i];
+        if (sw.type==2){
+          for (size_t j=0; j<sw.nb_ports; j++) {
             uint port = j;
-            if(switch.port_root == port){
+            if(sw.port_root == port){
               continue;
             }
             // si c'est pas un port root, on veut changer son etat
 
 
             // on recupere l'equipement en face
-            int id_equip_connec = switch.etat_ports[port].id_connecte;
+            int id_equip_connec = sw.etat_ports[port].id_connecte;
 
             machine switchFace = net->equipements[id_equip_connec];
 
@@ -151,10 +148,10 @@ int stp(Network *net) {
             for(size_t k =0; k<switchFace.nb_ports; k++){
               if(switchFace.etat_ports[k].id_connecte == i){
                 if(switchFace.port_root == k){
-                  switch.etat_ports[port].etat = 1;   // si c'est un port root on le met en designe
+                  sw.etat_ports[port].etat = 1;   // si c'est un port root on le met en designe
                 }
                 else{
-                  switch.etat_ports[port].etat = 2;   // sinon en bloque
+                  sw.etat_ports[port].etat = 2;   // sinon en bloque
                 }
               }
             }

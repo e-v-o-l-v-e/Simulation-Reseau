@@ -2,10 +2,14 @@
 #define STP_H
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
-#define STATION 1
-#define SWITCH  2
-#define HUB     0
+#include "graphe.h"
+
+typedef uint8_t mac[6];
 
 typedef struct bpdu{
     int id_root;
@@ -13,12 +17,18 @@ typedef struct bpdu{
     int cout;
 } bpdu;
 
-typedef struct machine Machine;
+typedef struct association {
+    uint num_port;
+    mac adr_mac;
+} association;
 
-
+typedef struct etat_port {
+  int etat;  //par defaut en mode designé // 0 root - 1 désigné - 2 bloqué
+  int id_connecte;  // id de la machine qui est connecte en face
+} etat_port;
 
 //existait deja
-struct machine {
+typedef struct machine {
     unsigned int type;
     char nom[32];
     unsigned char adr_mac[6];
@@ -33,16 +43,16 @@ struct machine {
     int cout;
     uint port_root;
     etat_port *etat_ports;
-};
+} machine;
 
-struct etat_port {
-  int etat=1;  //par defaut en mode designé // 0 root - 1 désigné - 2 bloqué
-  int id_connecte;  // id de la machine qui est connecte en face
-};
+typedef struct network {
+    graphe* g;
+    machine* equipements;
+    size_t nbEquipements;
+}network;
 
-
-bpdu creerBPDU(Machine switch);
-void receptionBPDU(Machine *sw, bpdu bpdu, uint port_reception, int poids);
-int stp(Network *net);
+bpdu creerBPDU(machine sw);
+void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids);
+int stp(network *net);
 
 #endif
