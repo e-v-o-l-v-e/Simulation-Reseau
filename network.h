@@ -2,6 +2,11 @@
 
 typedef uint8_t mac[6];
 
+typedef struct etat_port {
+  int etat;  //par defaut en mode designé // 0 root - 1 désigné - 2 bloqué
+  int id_connecte;  // id de la machine qui est connecte en face
+} etat_port;
+
 typedef struct association {
     uint num_port;
     mac adr_mac;
@@ -15,6 +20,13 @@ typedef struct machine {
     int nb_ports;        //0, 2
     uint priorite;       //2
     association* table;  //2
+    size_t nbAsso;
+    int id;
+    int id_root;
+    uint64_t stp_root;
+    int cout;
+    uint port_root;
+    etat_port *etat_ports;
 } machine;
 
 typedef struct network {
