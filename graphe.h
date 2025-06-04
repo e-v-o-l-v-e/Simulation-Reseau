@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include "stdint.h"
 
 typedef size_t sommet;
 
@@ -11,6 +12,7 @@ typedef struct arete
 {
   sommet s1;
   sommet s2;
+  uint poids;
 } arete;
 
 typedef struct graphe
@@ -35,5 +37,6 @@ size_t index_sommet(graphe const *g, sommet s);
 bool existe_arete(graphe const *g, arete a);
 bool ajouter_arete(graphe *g, arete a);
 size_t index_arete(graphe const *g, arete a);
+uint poids_arete(graphe const *g, sommet s1, sommet s2);
 
 size_t sommets_adjacents(graphe const *g, sommet s, sommet sa[]);
