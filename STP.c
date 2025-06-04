@@ -1,8 +1,12 @@
 #include "STP.h"
 
+bpdu creerBPDU(machine sw);
+void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids);
+
 bpdu creerBPDU(machine sw) {
     bpdu b;
     b.id_root = sw.id_root;
+    b.stp_root = sw.stp_root;
     b.id_envoie = sw.id;
     b.cout = sw.cout;
     return b;
@@ -11,11 +15,12 @@ bpdu creerBPDU(machine sw) {
 void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids) {
     int newCost = bpdu.cout + poids;
 
-    if (bpdu.id_root < sw->id_root || (bpdu.id_root == sw->id_root &&
+    if (bpdu.stp_root < sw->stp_root || (bpdu.stp_root == sw->stp_root &&
         newCost < sw->cout)/* || (bpdu.id_root == sw->id_root &&
         newCost == sw->cout && bpdu.id_envoie < sw->port_root)*/) {
 
         sw->id_root = bpdu.id_root;
+        sw->stp_root = bpdu.stp_root;
         //mettre l'ancien port root en non defini (-1)
         for(size_t i =0; i<sw->nb_ports; i++){
           sw->etat_ports[i].etat = -1;

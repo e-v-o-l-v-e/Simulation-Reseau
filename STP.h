@@ -13,10 +13,9 @@ typedef uint8_t mac[6];
 
 typedef struct bpdu{
     int id_root;
+    uint64_t stp_root;
     int id_envoie;
     int cout;
 } bpdu;
 
-bpdu creerBPDU(machine sw);
-void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids);
 int stp(network *net);

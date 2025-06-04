@@ -18,10 +18,11 @@ typedef struct etat_port {
 typedef struct machine {
     unsigned int type;
     char nom[32];
-    unsigned char adr_mac[6];
+    mac adr_mac;
     uint32_t adr_ip;
     int nb_ports;
     unsigned int priorite;
+    uint64_t stp_root;
     association *table;
     size_t nbAsso;
 

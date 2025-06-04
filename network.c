@@ -59,6 +59,15 @@ void creation_reseau() {
       for(size_t j=0; j<nombre_ports; j++){
         reseau->equipements[i].etat_ports[j] = (etat_port) {-1, -1};
       }
+
+      //init leur id du root
+      reseau->equipements[i].stp_root |= ((uint64_t) reseau->equipements[i].priorite) << 48;
+
+      for (int j = 0; j < 6; j++) {
+        reseau->equipements[i].stp_root |= ((uint64_t)reseau->equipements[i].adr_mac[j]) << (40 - 8 * j);
+      }
+
+
       break;
 
     case 0:
