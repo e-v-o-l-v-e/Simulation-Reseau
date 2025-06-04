@@ -1,14 +1,16 @@
 #include "network.h"
 #include "graphe.h"
-#include "STP.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define LINE_LENGHT 64
 
+int existe_asso(machine* sw, mac adr_mac);
+void ajout_asso(machine* sw, mac adr_mac, uint port);
+
 void creation_reseau() {
   FILE *config;
-  config = fopen("config2", "r");
+  config = fopen("config1", "r");
 
   if (config == NULL) {
     perror("le fichier de configuration n'existe pas ou n'est pas lisible.");
@@ -50,24 +52,6 @@ void creation_reseau() {
       string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
       reseau->equipements[i].nb_ports = nombre_ports;
       reseau->equipements[i].priorite = priorite;
-      reseau->equipements[i].id = i;
-
-      //on alloue la memoire pour les etats_ports
-      reseau->equipements[i].etat_ports = malloc(nombre_ports * sizeof(etat_port));
-
-      //on les met tous en etat inconnu
-      for(size_t j=0; j<nombre_ports; j++){
-        reseau->equipements[i].etat_ports[j] = (etat_port) {-1, -1};
-      }
-
-      //init leur id du root
-      reseau->equipements[i].stp_root |= ((uint64_t) reseau->equipements[i].priorite) << 48;
-
-      for (int j = 0; j < 6; j++) {
-        reseau->equipements[i].stp_root |= ((uint64_t)reseau->equipements[i].adr_mac[j]) << (40 - 8 * j);
-      }
-
-
       break;
 
     case 0:
@@ -83,37 +67,9 @@ void creation_reseau() {
     sscanf(line, "%d;%d;%d", &s1, &s2, &poid);
     arete a = {s1, s2, poid};
     ajouter_arete(g, a);
-
-    //ajout de l'id dans etat_port (s1)
-    machine equip = reseau->equipements[s1];
-    for(size_t j=0; j<equip.nb_ports; j++){
-      if(equip.etat_ports[j].id_connecte == -1){
-        reseau->equipements[s1].etat_ports[j].id_connecte = s2;
-        break;  // on a trouve le premier etat port pas init
-      }
-    }
-
-    //ajout de l'id dans etat_port (s2)
-    machine equip2 = reseau->equipements[s2];
-    for(size_t j=0; j<equip2.nb_ports; j++){
-      if(equip2.etat_ports[j].id_connecte == -1){
-        reseau->equipements[s2].etat_ports[j].id_connecte = s1;
-        break;  // on a trouve le premier etat port pas init
-      }
-    }
-
-
   }
 
   afficher(*reseau);
-
-  int retour = stp(reseau);
-  if(retour == EXIT_SUCCESS){
-    printf("Protocole STP mis en place\n");
-  }
-  else{
-    printf("Protocole STP non reussi\n");
-  }
 }
 
 void string_to_mac(const char *adr, uint8_t mac[6]) {
@@ -150,8 +106,8 @@ char *mac_to_string(const mac m) {
         break;
 
       case 2:
-        printf("%zu : switch, adresse mac : %s (connecté avec : ", i,
-               mac_to_string(reseau.equipements[i].adr_mac));
+        printf("%zu : switch, adresse max : %s (connecté avec : ", i,
+               reseau.equipements[i].adr_mac);
         break;
 
       case 0:
@@ -203,4 +159,36 @@ char *mac_to_string(const mac m) {
     sommets_adj = NULL;
 
     return degre;
+  }
+
+  int existe_asso(machine* sw, mac adr_mac) {
+    for (int i = 0; i < sw->nb_ports; i++) { //pour chaque case de notre table
+        if (sw->table[i].adr_mac == adr_mac) { //si on a la meme adresse mac
+            return (int)sw->table[i].num_port; //on retroune le port associe a cette adr
+        }
+    }
+    return -1; // Pas trouve
+  }
+
+
+  void ajout_asso(machine* sw, mac adr_mac, uint port) {
+
+      for (int i = 0; i < sw->nb_ports; i++) { //on parcours la table d'asso
+
+          // Verif si la case est vide
+          bool est_vide = true;
+          for (int j = 0; j < 6; j++) { //6 octets
+              if (sw->table[i].adr_mac[j] != 0) { //si un octets n'est pas vide
+                  est_vide = false;
+                  break;//on sort de la boucle for (passe donc a la prochaine case de la table asso)
+              }
+          }
+
+          //si la case est bel et bien vide
+          if (est_vide) {
+              sw->table[i].port = port;
+              memcpy(sw->table[i].adr_mac, adr_mac, 6); //copie 6 octets
+              break; //on arrete le parcours de la table
+          }
+      }
   }
