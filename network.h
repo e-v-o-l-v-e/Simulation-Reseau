@@ -14,7 +14,6 @@ typedef struct etat_port {
   int id_connecte;  // id de la machine qui est connecte en face
 } etat_port;
 
-//existait deja
 typedef struct machine {
     unsigned int type;
     char nom[32];
@@ -46,3 +45,5 @@ char *mac_to_string(const mac m);
 void string_to_mac(const char *adr, uint8_t mac[6]);
 void string_to_ip(const char *adr, uint32_t *ip);
 size_t degre(graphe const *g, sommet s);
+
+bool existe_machine(network* net, const mac adr);

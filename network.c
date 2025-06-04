@@ -132,75 +132,88 @@ char *mac_to_string(const mac m) {
   return str;
 }
 
-  void afficher(network reseau) {
+void afficher(network reseau) {
 
-    graphe *g = reseau.g;
+  graphe *g = reseau.g;
 
-    printf("# machines = %zu\n", ordre(g));
-    printf("# liens = %zu\n", nb_aretes(g));
+  printf("# machines = %zu\n", ordre(g));
+  printf("# liens = %zu\n", nb_aretes(g));
 
-    // Affichage des sommets
-    printf("--EQUIPEMENTS--\n");
+  // Affichage des sommets
+  printf("--EQUIPEMENTS--\n");
 
-    for (size_t i = 0; i < ordre(g); i++) {
-      switch (reseau.equipements[i].type) {
-      case 1:
-        printf("%zu : station, adresse mac : %s (connecté avec : ", i,
-               mac_to_string(reseau.equipements[i].adr_mac));
-        break;
+  for (size_t i = 0; i < ordre(g); i++) {
+    switch (reseau.equipements[i].type) {
+    case 1:
+      printf("%zu : station, adresse mac : %s (connecté avec : ", i,
+              mac_to_string(reseau.equipements[i].adr_mac));
+      break;
 
-      case 2:
-        printf("%zu : switch, adresse mac : %s (connecté avec : ", i,
-               mac_to_string(reseau.equipements[i].adr_mac));
-        break;
+    case 2:
+      printf("%zu : switch, adresse mac : %s (connecté avec : ", i,
+              mac_to_string(reseau.equipements[i].adr_mac));
+      break;
 
-      case 0:
-        printf("%zu : hub, connecté à :", i);
-        break;
-      }
-      sommet *sa = malloc(ordre(g) * sizeof(sommet));
+    case 0:
+      printf("%zu : hub, connecté à :", i);
+      break;
+    }
+    sommet *sa = malloc(ordre(g) * sizeof(sommet));
 
-      size_t nb_adj = sommets_adjacents(g, i, sa);
+    size_t nb_adj = sommets_adjacents(g, i, sa);
 
-      for (size_t j = 0; j < nb_adj; j++) {
-        printf("%zu ", *(sa + j));
-      }
-      printf(")\n");
+    for (size_t j = 0; j < nb_adj; j++) {
+      printf("%zu ", *(sa + j));
+    }
+    printf(")\n");
 
-      free(sa);
-      sa = NULL;
+    free(sa);
+    sa = NULL;
+  }
+
+  // Affichage des arêtes
+  printf("--LIENS--\n");
+
+  for (size_t i = 0; i < ordre(g); i++) {
+    sommet *sa = malloc(ordre(g) * sizeof(sommet));
+
+    size_t nb_adj = sommets_adjacents(g, i, sa);
+
+    for (size_t j = 0; j < nb_adj; j++) {
+      printf("%zu - %zu\n", i, *(sa + j));
     }
 
-    // Affichage des arêtes
-    printf("--LIENS--\n");
+    free(sa);
+    sa = NULL;
+  }
+}
 
-    for (size_t i = 0; i < ordre(g); i++) {
-      sommet *sa = malloc(ordre(g) * sizeof(sommet));
+size_t degre(graphe const *g, sommet s) {
+  // Retourne le nombre de sommets adjacents à s
+  size_t index_s = index_sommet(g, s);
+  if (index_s == UNKNOWN_INDEX) {
+    return UNKNOWN_INDEX;
+  }
 
-      size_t nb_adj = sommets_adjacents(g, i, sa);
+  sommet *sommets_adj = malloc((ordre(g) - 1) * sizeof(sommet));
 
-      for (size_t j = 0; j < nb_adj; j++) {
-        printf("%zu - %zu\n", i, *(sa + j));
-      }
+  size_t degre = sommets_adjacents(g, s, sommets_adj);
 
-      free(sa);
-      sa = NULL;
+  free(sommets_adj);
+  sommets_adj = NULL;
+
+  return degre;
+}
+
+bool existe_machine(network* net, const mac adr){
+  //Verifie si un equipement du reseau possede cette adresse mac (s'il existe)
+
+  for(size_t i =0; i<net->nbEquipements; i++){
+    machine equip = net->equipements[i];
+    if(equip.adr_mac == adr){
+      return true;
     }
   }
 
-  size_t degre(graphe const *g, sommet s) {
-    // Retourne le nombre de sommets adjacents à s
-    size_t index_s = index_sommet(g, s);
-    if (index_s == UNKNOWN_INDEX) {
-      return UNKNOWN_INDEX;
-    }
-
-    sommet *sommets_adj = malloc((ordre(g) - 1) * sizeof(sommet));
-
-    size_t degre = sommets_adjacents(g, s, sommets_adj);
-
-    free(sommets_adj);
-    sommets_adj = NULL;
-
-    return degre;
-  }
+  return false;
+}
