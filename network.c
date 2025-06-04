@@ -52,6 +52,24 @@ void creation_reseau() {
       string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
       reseau->equipements[i].nb_ports = nombre_ports;
       reseau->equipements[i].priorite = priorite;
+      reseau->equipements[i].id = i;
+
+      //on alloue la memoire pour les etats_ports
+      reseau->equipements[i].etat_ports = malloc(nombre_ports * sizeof(etat_port));
+
+      //on les met tous en etat inconnu
+      for(size_t j=0; j<nombre_ports; j++){
+        reseau->equipements[i].etat_ports[j] = (etat_port) {-1, -1};
+      }
+
+      //init leur id du root
+      reseau->equipements[i].stp_root |= ((uint64_t) reseau->equipements[i].priorite) << 48;
+
+      for (int j = 0; j < 6; j++) {
+        reseau->equipements[i].stp_root |= ((uint64_t)reseau->equipements[i].adr_mac[j]) << (40 - 8 * j);
+      }
+
+
       break;
 
     case 0:
@@ -186,7 +204,7 @@ char *mac_to_string(const mac m) {
 
           //si la case est bel et bien vide
           if (est_vide) {
-              sw->table[i].port = port;
+              sw->table[i].num_port = port;
               memcpy(sw->table[i].adr_mac, adr_mac, 6); //copie 6 octets
               break; //on arrete le parcours de la table
           }
