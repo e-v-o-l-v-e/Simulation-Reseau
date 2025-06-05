@@ -11,7 +11,7 @@ typedef struct association {
 
 typedef struct etat_port {
   int etat;  //par defaut en mode designé // 0 root - 1 désigné - 2 bloqué
-  int id_connecte;  // id de la machine qui est connecte en face
+  sommet id_connecte;  // id de la machine qui est connecte en face
 } etat_port;
 
 typedef struct machine {
@@ -25,8 +25,8 @@ typedef struct machine {
     association *table;
     size_t nbAsso;
 
-    int id;
-    int id_root;
+    sommet id;
+    sommet id_root;
     int cout;
     uint port_root;
     etat_port *etat_ports;
@@ -39,7 +39,8 @@ typedef struct network {
 } network;
 
 
-void creation_reseau();
+network* creation_reseau();
+void deinit_reseau(network* reseau);
 void afficher(network reseau);
 char *mac_to_string(const mac m);
 void string_to_mac(const char *adr, uint8_t mac[6]);
@@ -47,3 +48,5 @@ void string_to_ip(const char *adr, uint32_t *ip);
 size_t degre(graphe const *g, sommet s);
 
 bool existe_machine(network* net, const mac adr);
+int existe_asso(machine* sw, mac adr_mac);
+void ajout_asso(machine* sw, mac adr_mac, uint port);

@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #define LINE_LENGHT 64
 
-void creation_reseau() {
+network* creation_reseau() {
   FILE *config;
   config = fopen("config2", "r");
 
   if (config == NULL) {
     perror("le fichier de configuration n'existe pas ou n'est pas lisible.");
-    return;
+    return NULL;
   }
 
   char line[LINE_LENGHT];
@@ -51,6 +51,7 @@ void creation_reseau() {
       reseau->equipements[i].nb_ports = nombre_ports;
       reseau->equipements[i].priorite = priorite;
       reseau->equipements[i].id = i;
+      reseau->equipements[i].table = malloc(sizeof(association) * (reseau->nbEquipements-1));
 
       //on alloue la memoire pour les etats_ports
       reseau->equipements[i].etat_ports = malloc(nombre_ports * sizeof(etat_port));
@@ -73,6 +74,7 @@ void creation_reseau() {
     case 0:
       sscanf(line, "0;%d", &nombre_ports);
       reseau->equipements[i].nb_ports = nombre_ports;
+      reseau->equipements[i].id = i;
       break;
     }
   };
@@ -87,7 +89,7 @@ void creation_reseau() {
     //ajout de l'id dans etat_port (s1)
     machine equip = reseau->equipements[s1];
     for(size_t j=0; j<equip.nb_ports; j++){
-      if(equip.etat_ports[j].id_connecte == -1){
+      if(equip.type == 2 && equip.etat_ports[j].id_connecte == -1){
         reseau->equipements[s1].etat_ports[j].id_connecte = s2;
         break;  // on a trouve le premier etat port pas init
       }
@@ -96,7 +98,7 @@ void creation_reseau() {
     //ajout de l'id dans etat_port (s2)
     machine equip2 = reseau->equipements[s2];
     for(size_t j=0; j<equip2.nb_ports; j++){
-      if(equip2.etat_ports[j].id_connecte == -1){
+      if(equip2.type == 2 && equip2.etat_ports[j].id_connecte == -1){
         reseau->equipements[s2].etat_ports[j].id_connecte = s1;
         break;  // on a trouve le premier etat port pas init
       }
@@ -105,15 +107,27 @@ void creation_reseau() {
 
   }
 
-  afficher(*reseau);
+}
 
-  int retour = stp(reseau);
-  if(retour == EXIT_SUCCESS){
-    printf("Protocole STP mis en place\n");
+void deinit_reseau(network* reseau){
+  //Free de la table d'asso et des etats ports des switchs
+  for(size_t i=0; i<reseau->nbEquipements; i++){
+    if(reseau->equipements[i].type == 2){
+      free(reseau->equipements[i].table);
+      reseau->equipements[i].table = NULL;
+      free(reseau->equipements[i].etat_ports);
+      reseau->equipements[i].etat_ports = NULL;
+    }
   }
-  else{
-    printf("Protocole STP non reussi\n");
-  }
+
+  free(reseau->equipements);
+  reseau->equipements = NULL;
+
+  deinit_graphe(reseau->g);
+  reseau->g = NULL;
+
+  free(reseau);
+  reseau = NULL;
 }
 
 void string_to_mac(const char *adr, uint8_t mac[6]) {
@@ -216,4 +230,20 @@ bool existe_machine(network* net, const mac adr){
   }
 
   return false;
+}
+
+int existe_asso(machine* sw, mac adr_mac) {
+  for (int i = 0; i < sw->nb_ports; i++) { //pour chaque case de notre table
+      if (sw->table[i].adr_mac == adr_mac) { //si on a la meme adresse mac
+          return (int)sw->table[i].num_port; //on retroune le port associe a cette adr
+      }
+  }
+  return -1; // Pas trouve
+}
+
+
+void ajout_asso(machine* sw, mac adr_mac, uint port) {
+  sw->table[sw->nbAsso].num_port = port;
+  memcpy(sw->table[sw->nbAsso].adr_mac, adr_mac, 6); //copie 6 octets
+  sw->nbAsso++;
 }

@@ -12,9 +12,9 @@
 typedef uint8_t mac[6];
 
 typedef struct bpdu{
-    int id_root;
+    sommet id_root;
     uint64_t stp_root;
-    int id_envoie;
+    sommet id_envoie;
     int cout;
 } bpdu;
 
