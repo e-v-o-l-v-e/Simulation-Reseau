@@ -73,8 +73,8 @@ void afficher_trame_hexa(trame_ethernet* t){
     printf("\n");
 }
 
-void afficher_mac_user(uint8_t mac[6]){
-   printf("%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+void afficher_mac_user(mac adr_mac){
+   printf("%02X:%02X:%02X:%02X:%02X:%02X", adr_mac[0], adr_mac[1], adr_mac[2], adr_mac[3], adr_mac[4], adr_mac[5]);
 }
 
 void type_to_str(char* protocole, uint16_t type){
@@ -115,13 +115,12 @@ uint16_t str_to_type(const char* protocole){
    return 0;
 }
 
-uint recup_port(network* net, sommet id_equip_face, sommet id_equip, uint port_envoie){
+uint recup_port(network* net, sommet id_equip_face, sommet id_equip){
    uint port_face = 0;
-   if(net->equipements[id_equip_face].type == 2){        //Si en face c'est un switch, on recupere le port d'arrivée
-      for(uint j=0; j<net->equipements[id_equip_face].nb_ports; j++){
-         if(net->equipements[id_equip_face].etat_ports[port_envoie].id_connecte == id_equip){
-            port_face = j;
-         }
+   
+   for(uint i=0; i<net->equipements[id_equip].nb_ports; i++){
+      if(net->equipements[id_equip].type == 2 && net->equipements[id_equip].etat_ports[i].id_connecte == id_equip_face){
+         port_face = i;
       }
    }
 
@@ -131,27 +130,26 @@ uint recup_port(network* net, sommet id_equip_face, sommet id_equip, uint port_e
 bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, trame_ethernet* t, uint port){
    //Verifie si l'équipement est une station
    if(equip->type == 1){
-      if(equip->adr_mac == t->dest){            //S'il s'agit de la sation destinataire
-         printf("Trame reçue par l'équipement %zu !\n", id_equip);
+      if(memcmp(equip->adr_mac, t->dest, 6) == 0){            //S'il s'agit de la sation destinataire
+         printf("Trame reçue par la station %zu ! Arrivée à destination.\n", id_equip);
          return true;
       }
-      printf("La trame n'est pas pour l'équipement' %zu.\n", id_equip);
+      printf("La trame n'est pas pour la station %zu.\n", id_equip);
       return false;
    }
 
    if(equip->type == 0){            //S'il s'agit d'un hub, broadcast
-      printf("L'équipement %zu a reçu la trame. En tant que hub, il broadcast.\n", id_equip);
+      printf("Le hub %zu broadcast.\n", id_equip);
 
-      bool reussite = false;
       for(size_t i =0; i<equip->nb_ports; i++){
          if(i == port){             //Si c'est le port de réception, on envoie pas
             continue;
          }
 
          sommet id_en_face = equip->etat_ports[i].id_connecte;
-         uint port_face = recup_port(net, id_en_face, id_equip, i);
+         uint port_face = recup_port(net, id_en_face, id_equip);
 
-         if(net->equipements[id_en_face].etat_ports[port_face].etat == 2){       //Si le port est bloqué, on envoie pas
+         if(net->equipements[id_en_face].type == 2 && net->equipements[id_en_face].etat_ports[port_face].etat == 2){       //Si le port est bloqué, on envoie pas
             continue;
          }
 
@@ -159,17 +157,15 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
          bool essai = parcours_switch_recursif(net, &net->equipements[id_en_face], id_en_face, t, port_face);
          
          if(essai){
-            reussite = true;     //Si on a reussi, on met à true
+            return true;     //Si on a reussi, on met à true
          }
 
       }
 
-      return reussite;
+      return false;
    }
 
-
    //Côté switch
-   bool reussite = false;
 
    //On verifie si l'association port/adr_source existe et on l'ajoure si non
    int port_asso = existe_asso(equip, t->src);
@@ -186,39 +182,40 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
       machine* equip_face = &net->equipements[id_face];
 
       //Cherche le port en face
-      uint port_recep = recup_port(net, id_face, id_equip, port_envoie);
+      uint port_recep = recup_port(net, id_face, id_equip);
+      printf("Le switch %zu envoie à l'équipement %zu.\n", id_equip, id_face);
 
       bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
 
       if(essai){
-         reussite = true;
+         return true;
       }
    }
    else{
       for(uint i=0; i<equip->nb_ports; i++){
-         if(i == port){                         //On ne renvoie pas sur le port de réception
-            continue;
-         }
+         if(i != port){                         //On ne renvoie pas sur le port de réception
+            sommet id_face = equip->etat_ports[i].id_connecte;
+            machine* equip_face = &net->equipements[id_face];
+            
+            //Cherche le port en face
+            uint port_recep = recup_port(net, id_equip, id_face);
 
-         sommet id_face = equip->etat_ports[i].id_connecte;
-         machine* equip_face = &net->equipements[id_face];
-         
-         //Cherche le port en face
-         uint port_recep = recup_port(net, id_face, id_equip, port_envoie);
+            if(net->equipements[id_face].type == 2 && net->equipements[id_face].etat_ports[port_recep].etat == 2){       //Si le port est bloqué, on envoie pas
+               continue;
+            }
 
-         if(net->equipements[id_face].etat_ports[port_recep].etat == 2){       //Si le port est bloqué, on envoie pas
-            continue;
-         }
+            printf("Le switch %zu envoie à l'équipement %zu.\n", id_equip, id_face);
 
-         bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
+            bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
 
-         if(essai){
-            reussite = true;
+            if(essai){
+               return true;
+            }
          }
       }
    }
 
-   return reussite;
+   return false;
 
 }
 
@@ -242,12 +239,11 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
    sommet src = -1;
    for(size_t i =0; i<net->nbEquipements; i++){
       machine equip = net->equipements[i];
-      if(equip.adr_mac == adr_src){                         //Si c'est la station source
+      if(memcmp(equip.adr_mac, adr_src, 6) == 0){                         //Si c'est la station source
          src = i;
          break;
       }
    }
-
 
    //Cherche le switch qui est connecté à la station source
    machine* sw = NULL;
@@ -255,10 +251,11 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
    for(size_t i =0; i<net->nbEquipements; i++){
       machine equip = net->equipements[i];
       if(equip.type == 2){                         //Si c'est un switch
-         arete a = (arete) {src, i};
+         arete a = (arete) {src, i, 0};
          if(existe_arete(net->g, a)){
             sw = &net->equipements[i];
             swit_ch = i;
+            break;
          }
       }
    }

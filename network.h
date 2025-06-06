@@ -41,7 +41,7 @@ typedef struct network {
 
 network* creation_reseau();
 void deinit_reseau(network* reseau);
-void afficher(network reseau);
+void afficher(network* reseau);
 char *mac_to_string(const mac m);
 void string_to_mac(const char *adr, uint8_t mac[6]);
 void string_to_ip(const char *adr, uint32_t *ip);

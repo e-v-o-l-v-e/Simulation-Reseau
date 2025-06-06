@@ -11,7 +11,7 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
-  afficher(*reseau);
+  afficher(reseau);
 
   int retour = stp(reseau);
   if(retour == EXIT_SUCCESS){
@@ -23,7 +23,7 @@ int main() {
 
   //Echange de trame
   mac adr_src = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x01};
-  mac adr_dst = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x04};
+  mac adr_dst = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x02};
   char* message = "Bonjour";
   char* protocole = "IPv4";
   envoyer_trame(reseau, adr_src, adr_dst, message, protocole);

@@ -53,6 +53,7 @@ network* creation_reseau() {
       reseau->equipements[i].id = i;
       reseau->equipements[i].table = malloc(sizeof(association) * (reseau->nbEquipements-1));
 
+
       //on alloue la memoire pour les etats_ports
       reseau->equipements[i].etat_ports = malloc(nombre_ports * sizeof(etat_port));
 
@@ -67,7 +68,6 @@ network* creation_reseau() {
       for (int j = 0; j < 6; j++) {
         reseau->equipements[i].stp_root |= ((uint64_t)reseau->equipements[i].adr_mac[j]) << (40 - 8 * j);
       }
-
 
       break;
 
@@ -104,8 +104,9 @@ network* creation_reseau() {
       }
     }
 
-
   }
+
+  return reseau;
 
 }
 
@@ -146,35 +147,36 @@ char *mac_to_string(const mac m) {
   return str;
 }
 
-void afficher(network reseau) {
+void afficher(network* reseau) {
+  if(reseau == NULL){
+    printf("nullll\n");
+  }
 
-  graphe *g = reseau.g;
-
-  printf("# machines = %zu\n", ordre(g));
-  printf("# liens = %zu\n", nb_aretes(g));
+  printf("# machines = %zu\n", ordre(reseau->g));
+  printf("# liens = %zu\n", nb_aretes(reseau->g));
 
   // Affichage des sommets
   printf("--EQUIPEMENTS--\n");
 
-  for (size_t i = 0; i < ordre(g); i++) {
-    switch (reseau.equipements[i].type) {
+  for (size_t i = 0; i < ordre(reseau->g); i++) {
+    switch (reseau->equipements[i].type) {
     case 1:
       printf("%zu : station, adresse mac : %s (connecté avec : ", i,
-              mac_to_string(reseau.equipements[i].adr_mac));
+              mac_to_string(reseau->equipements[i].adr_mac));
       break;
 
     case 2:
       printf("%zu : switch, adresse mac : %s (connecté avec : ", i,
-              mac_to_string(reseau.equipements[i].adr_mac));
+              mac_to_string(reseau->equipements[i].adr_mac));
       break;
 
     case 0:
       printf("%zu : hub, connecté à :", i);
       break;
     }
-    sommet *sa = malloc(ordre(g) * sizeof(sommet));
+    sommet *sa = malloc(ordre(reseau->g) * sizeof(sommet));
 
-    size_t nb_adj = sommets_adjacents(g, i, sa);
+    size_t nb_adj = sommets_adjacents(reseau->g, i, sa);
 
     for (size_t j = 0; j < nb_adj; j++) {
       printf("%zu ", *(sa + j));
@@ -188,10 +190,10 @@ void afficher(network reseau) {
   // Affichage des arêtes
   printf("--LIENS--\n");
 
-  for (size_t i = 0; i < ordre(g); i++) {
-    sommet *sa = malloc(ordre(g) * sizeof(sommet));
+  for (size_t i = 0; i < ordre(reseau->g); i++) {
+    sommet *sa = malloc(ordre(reseau->g) * sizeof(sommet));
 
-    size_t nb_adj = sommets_adjacents(g, i, sa);
+    size_t nb_adj = sommets_adjacents(reseau->g, i, sa);
 
     for (size_t j = 0; j < nb_adj; j++) {
       printf("%zu - %zu\n", i, *(sa + j));
@@ -224,8 +226,8 @@ bool existe_machine(network* net, const mac adr){
 
   for(size_t i =0; i<net->nbEquipements; i++){
     machine equip = net->equipements[i];
-    if(equip.adr_mac == adr){
-      return true;
+    if (memcmp(equip.adr_mac, adr, 6) == 0) {
+        return true;
     }
   }
 
