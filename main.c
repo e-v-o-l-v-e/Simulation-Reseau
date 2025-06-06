@@ -27,6 +27,8 @@ int main() {
   char* message = "Bonjour";
   char* protocole = "IPv4";
   envoyer_trame(reseau, adr_src, adr_dst, message, protocole);
+  message = "Coucou";
+  envoyer_trame(reseau, adr_dst, adr_src, message, protocole);
 
   //Free du reseau
   deinit_reseau(reseau);

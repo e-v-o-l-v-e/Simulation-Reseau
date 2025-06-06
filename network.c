@@ -236,7 +236,7 @@ bool existe_machine(network* net, const mac adr){
 
 int existe_asso(machine* sw, mac adr_mac) {
   for (int i = 0; i < sw->nb_ports; i++) { //pour chaque case de notre table
-      if (sw->table[i].adr_mac == adr_mac) { //si on a la meme adresse mac
+      if (memcmp(sw->table[i].adr_mac, adr_mac, 6) == 0) { //si on a la meme adresse mac
           return (int)sw->table[i].num_port; //on retroune le port associe a cette adr
       }
   }

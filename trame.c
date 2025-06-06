@@ -133,6 +133,7 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
    if(equip->type == 1){
       if(memcmp(equip->adr_mac, t->dest, 6) == 0){            //S'il s'agit de la sation destinataire
          printf("[Station %zu] Trame reçue ! Destination atteinte.\n", id_equip);
+         printf("\t Message : %s\n", t->data);
          return true;
       }
       printf("[Station %zu] La trame n'est pas pour cette station.\n", id_equip);
@@ -189,7 +190,7 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
       //Cherche le port en face
       uint port_recep = recup_port(net, id_face, id_equip);
       printf("[Switch %zu] Destination connue : ", id_equip);
-      afficher_mac_user(t->src);
+      afficher_mac_user(t->dest);
       printf(" -> port %d\n", port_recep);
 
       printf("\t   Port %d -> équipement %zu\n", port_envoie, id_face);
@@ -209,8 +210,8 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
             }
             machine* equip_face = &net->equipements[id_face];
 
-            printf("[Switch %zu] Destination inconnu : ", id_equip);
-            afficher_mac_user(t->src);
+            printf("[Switch %zu] Destination inconnue : ", id_equip);
+            afficher_mac_user(t->dest);
             printf(" -> diffusion\n");
             
             //Cherche le port en face
