@@ -50,3 +50,4 @@ size_t degre(graphe const *g, sommet s);
 bool existe_machine(network* net, const mac adr);
 int existe_asso(machine* sw, mac adr_mac);
 void ajout_asso(machine* sw, mac adr_mac, uint port);
+void affiche_table_commutation(machine* sw);

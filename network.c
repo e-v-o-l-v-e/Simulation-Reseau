@@ -249,3 +249,15 @@ void ajout_asso(machine* sw, mac adr_mac, uint port) {
   memcpy(sw->table[sw->nbAsso].adr_mac, adr_mac, 6); //copie 6 octets
   sw->nbAsso++;
 }
+
+void affiche_table_commutation(machine* sw){
+  printf("Table de commutation du switch %zu :\n", sw->id);
+  if(sw->nbAsso >0){
+    for(size_t i=0; i<sw->nbAsso; i++){
+      printf("\t Port %d : %s\n", sw->table[i].num_port, mac_to_string(sw->table[i].adr_mac));
+    }
+  }
+  else{
+    printf("\tTable de commutation vide.\n");
+  }
+}

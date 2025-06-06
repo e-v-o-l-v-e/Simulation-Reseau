@@ -209,10 +209,6 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
                continue;
             }
             machine* equip_face = &net->equipements[id_face];
-
-            printf("[Switch %zu] Destination inconnue : ", id_equip);
-            afficher_mac_user(t->dest);
-            printf(" -> diffusion\n");
             
             //Cherche le port en face
             uint port_recep = recup_port(net, id_equip, id_face);
@@ -221,6 +217,9 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
                continue;
             }
 
+            printf("[Switch %zu] Destination inconnue : ", id_equip);
+            afficher_mac_user(t->dest);
+            printf(" -> diffusion\n");
             printf("\t   Port %d -> équipement %zu\n", i, id_face);
 
             bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
