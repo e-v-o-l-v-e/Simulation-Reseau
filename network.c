@@ -57,9 +57,9 @@ network* creation_reseau() {
       //on alloue la memoire pour les etats_ports
       reseau->equipements[i].etat_ports = malloc(nombre_ports * sizeof(etat_port));
 
-      //on les met tous en etat inconnu
+      //on les met tous en etat désigné
       for(size_t j=0; j<nombre_ports; j++){
-        reseau->equipements[i].etat_ports[j] = (etat_port) {-1, -1};
+        reseau->equipements[i].etat_ports[j] = (etat_port) {1, -1};
       }
 
       //init leur id du root

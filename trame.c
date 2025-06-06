@@ -277,7 +277,7 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
    //Cherche le port de réception
    uint port = 0;
    for(uint i =0; i<sw->nb_ports; i++){
-      if(sw->etat_ports[i].id_connecte == src){            //Si l'equip enface
+      if(sw->etat_ports[i].id_connecte == src){            //Si l'equip en face est la station source
          port = i;
       }
    }
