@@ -22,7 +22,6 @@ void deinit_trame(trame_ethernet* t);
 
 void afficher_trame(trame_ethernet* t);
 void afficher_trame_hexa(trame_ethernet* t);
-void afficher_mac_user(uint8_t mac[6]);
 void type_to_str(char* protocole, uint16_t type);
 
 void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, const char* protocole);

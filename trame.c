@@ -29,10 +29,7 @@ void deinit_trame(trame_ethernet* t){
 void afficher_trame(trame_ethernet* t){
    printf("Affichage de la trame...\n");
 
-   afficher_mac_user(t->src);
-   printf(" -> ");
-   afficher_mac_user(t->dest);
-   printf("\n");
+   printf("%s -> %s\n", mac_to_string(t->src), mac_to_string(t->dest));
 
    char protocole[32];
    type_to_str(protocole, t->type);
@@ -71,10 +68,6 @@ void afficher_trame_hexa(trame_ethernet* t){
         printf("%02X ", t->fcs[i]);
 
     printf("\n");
-}
-
-void afficher_mac_user(mac adr_mac){
-   printf("%02X:%02X:%02X:%02X:%02X:%02X", adr_mac[0], adr_mac[1], adr_mac[2], adr_mac[3], adr_mac[4], adr_mac[5]);
 }
 
 void type_to_str(char* protocole, uint16_t type){
@@ -175,9 +168,9 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
 
    if(port_asso == -1){
       ajout_asso(equip, t->src, port);
-      printf("\tApprentissage : MAC ");
-      afficher_mac_user(t->src);
-      printf(" -> port %d\n", port);
+      printf("\tApprentissage : %s -> port %d\n", mac_to_string(t->src), port);
+      //afficher_mac_user(t->src);
+      //printf(" -> port %d\n", port);
    }
 
    //On verifie si une association avec adr_dest existe
@@ -189,9 +182,9 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
 
       //Cherche le port en face
       uint port_recep = recup_port(net, id_face, id_equip);
-      printf("[Switch %zu] Destination connue : ", id_equip);
-      afficher_mac_user(t->dest);
-      printf(" -> port %d\n", port_recep);
+      printf("[Switch %zu] Destination connue : %s -> port %d\n", id_equip, mac_to_string(t->dest), port_recep);
+      //afficher_mac_user(t->dest);
+      //printf(" -> port %d\n", port_recep);
 
       printf("\t   Port %d -> équipement %zu\n", port_envoie, id_face);
 
@@ -217,9 +210,9 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
                continue;
             }
 
-            printf("[Switch %zu] Destination inconnue : ", id_equip);
-            afficher_mac_user(t->dest);
-            printf(" -> diffusion\n");
+            printf("[Switch %zu] Destination inconnue : %s -> diffusion\n", id_equip, mac_to_string(t->dest));
+            //afficher_mac_user(t->dest);
+            //printf(" -> diffusion\n");
             printf("\t   Port %d -> équipement %zu\n", i, id_face);
 
             bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
@@ -258,7 +251,7 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
    sommet src = -1;
    for(size_t i =0; i<net->nbEquipements; i++){
       machine equip = net->equipements[i];
-      if(memcmp(equip.adr_mac, adr_src, 6) == 0){                         //Si c'est la station source
+      if(memcmp(equip.adr_mac, adr_src, 6) == 0){        //Si c'est la station source
          src = i;
          break;
       }
