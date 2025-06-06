@@ -126,7 +126,7 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
    if(equip->type == 1){
       if(memcmp(equip->adr_mac, t->dest, 6) == 0){            //S'il s'agit de la sation destinataire
          printf("[Station %zu] Trame reçue ! Destination atteinte.\n", id_equip);
-         printf("\t Message : %s\n", t->data);
+         printf("\tMessage : %s\n", t->data);
          return true;
       }
       printf("[Station %zu] La trame n'est pas pour cette station.\n", id_equip);
@@ -134,7 +134,7 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
    }
 
    if(equip->type == 0){            //S'il s'agit d'un hub, broadcast
-      printf("[Hub %zu] Trame reçue via le port %d : broadcast.\n", id_equip, port);
+      printf("[Hub %zu] Trame reçue via le port %d.\n", id_equip, port);
 
       for(size_t i =0; i<equip->nb_ports; i++){
          if(i == port){             //Si c'est le port de réception, on envoie pas
@@ -149,10 +149,14 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
          }
 
          //Envoie de la trame au suivant
+         printf("\t Envoi par le port %zu\n", i);
          bool essai = parcours_switch_recursif(net, &net->equipements[id_en_face], id_en_face, t, port_face);
          
          if(essai){
             return true;     //Si on a reussi, on met à true
+         }
+         else{
+            printf("Retour au hub %zu.\n", id_equip);
          }
 
       }
@@ -169,8 +173,6 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
    if(port_asso == -1){
       ajout_asso(equip, t->src, port);
       printf("\tApprentissage : %s -> port %d\n", mac_to_string(t->src), port);
-      //afficher_mac_user(t->src);
-      //printf(" -> port %d\n", port);
    }
 
    //On verifie si une association avec adr_dest existe
@@ -183,9 +185,6 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
       //Cherche le port en face
       uint port_recep = recup_port(net, id_face, id_equip);
       printf("[Switch %zu] Destination connue : %s -> port %d\n", id_equip, mac_to_string(t->dest), port_recep);
-      //afficher_mac_user(t->dest);
-      //printf(" -> port %d\n", port_recep);
-
       printf("\t   Port %d -> équipement %zu\n", port_envoie, id_face);
 
       bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
@@ -211,8 +210,6 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
             }
 
             printf("[Switch %zu] Destination inconnue : %s -> diffusion\n", id_equip, mac_to_string(t->dest));
-            //afficher_mac_user(t->dest);
-            //printf(" -> diffusion\n");
             printf("\t   Port %d -> équipement %zu\n", i, id_face);
 
             bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);

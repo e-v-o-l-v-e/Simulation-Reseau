@@ -258,6 +258,6 @@ void affiche_table_commutation(machine* sw){
     }
   }
   else{
-    printf("\tTable de commutation vide.\n");
+    printf("\t ...\n");
   }
 }
