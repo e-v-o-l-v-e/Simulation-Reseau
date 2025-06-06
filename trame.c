@@ -128,18 +128,19 @@ uint recup_port(network* net, sommet id_equip_face, sommet id_equip){
 }
 
 bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, trame_ethernet* t, uint port){
+   printf("\n");
    //Verifie si l'équipement est une station
    if(equip->type == 1){
       if(memcmp(equip->adr_mac, t->dest, 6) == 0){            //S'il s'agit de la sation destinataire
-         printf("Trame reçue par la station %zu ! Arrivée à destination.\n", id_equip);
+         printf("[Station %zu] Trame reçue ! Destination atteinte.\n", id_equip);
          return true;
       }
-      printf("La trame n'est pas pour la station %zu.\n", id_equip);
+      printf("[Station %zu] La trame n'est pas pour cette station.\n", id_equip);
       return false;
    }
 
    if(equip->type == 0){            //S'il s'agit d'un hub, broadcast
-      printf("Le hub %zu broadcast.\n", id_equip);
+      printf("[Hub %zu] Trame reçue via le port %d : broadcast.\n", id_equip, port);
 
       for(size_t i =0; i<equip->nb_ports; i++){
          if(i == port){             //Si c'est le port de réception, on envoie pas
@@ -166,24 +167,32 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
    }
 
    //Côté switch
+   printf("[Switch %zu] Trame reçue via le port %d.\n", id_equip, port); 
 
    //On verifie si l'association port/adr_source existe et on l'ajoure si non
    int port_asso = existe_asso(equip, t->src);
 
    if(port_asso == -1){
       ajout_asso(equip, t->src, port);
+      printf("\tApprentissage : MAC ");
+      afficher_mac_user(t->src);
+      printf(" -> port %d\n", port);
    }
 
    //On verifie si une association avec adr_dest existe
    int port_envoie = existe_asso(equip, t->dest);
 
-   if(port_envoie != -1){
+   if(port_envoie != -1){     //L'association existe
       sommet id_face = equip->etat_ports[port_envoie].id_connecte;
       machine* equip_face = &net->equipements[id_face];
 
       //Cherche le port en face
       uint port_recep = recup_port(net, id_face, id_equip);
-      printf("Le switch %zu envoie à l'équipement %zu.\n", id_equip, id_face);
+      printf("[Switch %zu] Destination connue : ", id_equip);
+      afficher_mac_user(t->src);
+      printf(" -> port %d\n", port_recep);
+
+      printf("\t   Port %d -> équipement %zu\n", port_envoie, id_face);
 
       bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
 
@@ -195,7 +204,14 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
       for(uint i=0; i<equip->nb_ports; i++){
          if(i != port){                         //On ne renvoie pas sur le port de réception
             sommet id_face = equip->etat_ports[i].id_connecte;
+            if(id_face >= net->nbEquipements){        //Si le port n'est connecté à rien
+               continue;
+            }
             machine* equip_face = &net->equipements[id_face];
+
+            printf("[Switch %zu] Destination inconnu : ", id_equip);
+            afficher_mac_user(t->src);
+            printf(" -> diffusion\n");
             
             //Cherche le port en face
             uint port_recep = recup_port(net, id_equip, id_face);
@@ -204,12 +220,15 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
                continue;
             }
 
-            printf("Le switch %zu envoie à l'équipement %zu.\n", id_equip, id_face);
+            printf("\t   Port %d -> équipement %zu\n", i, id_face);
 
             bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
 
             if(essai){
                return true;
+            }
+            else{
+               printf("Retour au switch %zu.\n", id_equip);
             }
          }
       }
@@ -275,14 +294,13 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
 
 
    //Appel à la fonction d'envoi
+   printf("\n=============================\n");
    printf("Envoie de la trame...\n");
+   printf("----------------\n");
    bool reussite = parcours_switch_recursif(net, sw, swit_ch, &t, port);
 
    //Affiche le retour
-   if(reussite){
-      printf("Trame envoyée et reçue avec succès !\n");
-   }
-   else{
+   if(!reussite){
       printf("Quelque chose s'est mal passé... La trame n'a pas été reçue\n");
    }
 
