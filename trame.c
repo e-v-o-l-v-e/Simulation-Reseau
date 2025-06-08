@@ -27,8 +27,6 @@ void deinit_trame(trame_ethernet* t){
 }
 
 void afficher_trame(trame_ethernet* t){
-   printf("Affichage de la trame...\n");
-
    printf("%s -> %s\n", mac_to_string(t->src), mac_to_string(t->dest));
 
    char protocole[32];
@@ -49,12 +47,10 @@ void afficher_trame_hexa(trame_ethernet* t){
     printf("%02X ", t->sfd);
 
     // Adresse MAC destination 
-    for (int i = 0; i < 6; i++)
-        printf("%02X ", t->dest[i]);
+    printf("%s ", mac_to_string_hexa(t->dest));
 
     // Adresse MAC source
-    for (int i = 0; i < 6; i++)
-        printf("%02X ", t->src[i]);
+    printf("%s ", mac_to_string_hexa(t->src));
 
     // Type
     printf("%02X %02X ", (t->type >> 8) & 0xFF, t->type & 0xFF);
@@ -244,6 +240,10 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
    uint16_t type = str_to_type(protocole);
    trame_ethernet t = init_trame(adr_src, adr_dst, type, message);
 
+   //Affichage de la trame 
+   printf("\n=== Trame Ethernet ===\n");
+   afficher_trame(&t);
+
    //Cherche le numero de sommet de la station source
    sommet src = -1;
    for(size_t i =0; i<net->nbEquipements; i++){
@@ -284,8 +284,8 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
 
 
    //Appel à la fonction d'envoi
-   printf("\n=============================\n");
-   printf("Envoie de la trame...\n");
+   printf("\n---------------\n");
+   printf("Envoi de la trame...\n");
    printf("----------------\n");
    bool reussite = parcours_switch_recursif(net, sw, swit_ch, &t, port);
 

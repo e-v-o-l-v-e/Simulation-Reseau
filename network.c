@@ -43,6 +43,7 @@ network* creation_reseau() {
              &priorite);
       string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
       string_to_ip(buffer_ip, &reseau->equipements[i].adr_ip);
+      reseau->equipements[i].id = i;
       break;
 
     case 2:
@@ -141,9 +142,22 @@ void string_to_ip(const char *adr, uint32_t *ip) {
   sscanf(adr, "%u.%u.%u.%u", &a, &b, &c, &d);
   *ip = (a << 24) | (b << 16) | (c << 8) | d;
 }
+
+char *ip_to_string(const uint32_t ip){
+  char *str = malloc(16);
+  sprintf(str, "%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
+  return str;
+}
+
 char *mac_to_string(const mac m) {
   char *str = malloc(18);
   sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x", m[0], m[1], m[2], m[3], m[4], m[5]);
+  return str;
+}
+
+char *mac_to_string_hexa(const mac m) {
+  char *str = malloc(18);
+  sprintf(str, "%02x %02x %02x %02x %02x %02x", m[0], m[1], m[2], m[3], m[4], m[5]);
   return str;
 }
 
@@ -202,6 +216,8 @@ void afficher(network* reseau) {
     free(sa);
     sa = NULL;
   }
+  
+  printf("\n");
 }
 
 size_t degre(graphe const *g, sommet s) {
@@ -251,30 +267,28 @@ void ajout_asso(machine* sw, mac adr_mac, uint port) {
 }
 
 void affiche_table_commutation(machine* sw){
-  printf("Table de commutation du switch %zu :\n", sw->id);
+  printf("   Table de commutation :\n");
   if(sw->nbAsso >0){
     for(size_t i=0; i<sw->nbAsso; i++){
-      printf("\t Port %d : %s\n", sw->table[i].num_port, mac_to_string(sw->table[i].adr_mac));
+      printf("     Port %d : %s\n", sw->table[i].num_port, mac_to_string(sw->table[i].adr_mac));
     }
   }
   else{
-    printf("\t ...\n");
+    printf("      ...\n");
   }
 }
 
 void affiche_port_switch(machine* sw){
-  printf("Switch %zu :\n", sw->id);
-
   if(sw->id == sw->id_root){
-    printf("Switch racine : Oui\n");
+    printf("   Switch racine : Oui\n");
   }
   else{
-    printf("Switch racine : Non\n");
+    printf("   Switch racine : Non\n");
   }
 
-  printf("Coût jusqu'à la racine : %d\n", sw->cout);
+  printf("   Coût jusqu'à la racine : %d\n", sw->cout);
 
-  printf("Etats des ports (%d) :\n", sw->nb_ports);
+  printf("   Etats des ports (%d) :\n", sw->nb_ports);
   for(size_t i=0; i<sw->nb_ports; i++){
     if(sw->etat_ports[i].id_connecte != -1){
       char* etat = "";
@@ -287,8 +301,24 @@ void affiche_port_switch(machine* sw){
       else{
         etat = "Bloqué";
       }
-      printf("Port %zu relié à l'équipement %zu : %s\n", i, sw->etat_ports[i].id_connecte, etat);
+      printf("      Port %zu relié à l'équipement %zu : %s\n", i, sw->etat_ports[i].id_connecte, etat);
     }
   }
   printf("\n");
+}
+
+void affiche_infos_station(machine* station){
+  printf("Station %zu :\n", station->id);
+  printf("   Adresse IP : %s\n", ip_to_string(station->adr_ip));
+  printf("   Adresse MAC : %s\n", mac_to_string_hexa(station->adr_mac));
+}
+
+void affiche_infos_switch(machine* sw){
+  printf("Switch %zu :\n", sw->id);
+  printf("   Adresse IP : %s\n", ip_to_string(sw->adr_ip));
+  printf("   Adresse MAC : %s\n", mac_to_string_hexa(sw->adr_mac));
+  printf("\n");
+
+  affiche_port_switch(sw);
+  affiche_table_commutation(sw);
 }

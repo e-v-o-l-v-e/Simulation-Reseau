@@ -13,6 +13,16 @@ int main() {
 
   afficher(reseau);
 
+  printf("==== Affichage des stations ====\n");
+
+  for(size_t i =0; i<reseau->nbEquipements; i++){
+    if(reseau->equipements[i].type == 1){
+      affiche_infos_station(&reseau->equipements[i]);
+      printf("\n");
+    }
+  }
+
+  printf("\n==== Protocole STP ====\n");
   int retour = stp(reseau);
   if(retour == EXIT_SUCCESS){
     printf("Protocole STP mis en place\n");
@@ -20,6 +30,17 @@ int main() {
   else{
     printf("Protocole STP non reussi\n");
   }
+
+  printf("==== Affichage des switchs ====\n");
+  for(size_t i =0; i<reseau->nbEquipements; i++){
+    if(reseau->equipements[i].type == 2){
+      affiche_infos_switch(&reseau->equipements[i]);
+      printf("\n");
+    }
+  }
+
+  printf("\n\n------------------------------\n");
+  printf("\n==== Lancement de trames ethernet ====\n");
 
   //Echange de trame
   /*
@@ -40,21 +61,14 @@ int main() {
   envoyer_trame(reseau, adr_src, adr_dst, message, protocole);
   
   //Affichage des tables de commutation
-  printf("\n============================\n");
+  printf("\n\n------------------------------\n");
+  printf("==== Tables de commutation des switchs ====\n");
   
   for(size_t i =0; i<reseau->nbEquipements; i++){
     if(reseau->equipements[i].type == 2){
+      printf("Switch %zu :\n", i);
       affiche_table_commutation(&reseau->equipements[i]);
       printf("\n");
-    }
-  }
-
-  //Affichage des etats des ports
-  printf("\n============================\n");
-  
-  for(size_t i =0; i<reseau->nbEquipements; i++){
-    if(reseau->equipements[i].type == 2){
-      affiche_port_switch(&reseau->equipements[i]);
     }
   }
 

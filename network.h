@@ -43,8 +43,10 @@ network* creation_reseau();
 void deinit_reseau(network* reseau);
 void afficher(network* reseau);
 char *mac_to_string(const mac m);
+char *mac_to_string_hexa(const mac m);
 void string_to_mac(const char *adr, uint8_t mac[6]);
 void string_to_ip(const char *adr, uint32_t *ip);
+char *ip_to_string(const uint32_t ip);
 size_t degre(graphe const *g, sommet s);
 
 bool existe_machine(network* net, const mac adr);
@@ -52,3 +54,5 @@ int existe_asso(machine* sw, mac adr_mac);
 void ajout_asso(machine* sw, mac adr_mac, uint port);
 void affiche_table_commutation(machine* sw);
 void affiche_port_switch(machine* sw);
+void affiche_infos_station(machine* station);
+void affiche_infos_switch(machine* sw);
