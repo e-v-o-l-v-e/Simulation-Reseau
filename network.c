@@ -8,7 +8,7 @@
 
 network* creation_reseau() {
   FILE *config;
-  config = fopen("config2", "r");
+  config = fopen("config_cycle.lan", "r");
 
   if (config == NULL) {
     perror("le fichier de configuration n'existe pas ou n'est pas lisible.");
@@ -260,4 +260,35 @@ void affiche_table_commutation(machine* sw){
   else{
     printf("\t ...\n");
   }
+}
+
+void affiche_port_switch(machine* sw){
+  printf("Switch %zu :\n", sw->id);
+
+  if(sw->id == sw->id_root){
+    printf("Switch racine : Oui\n");
+  }
+  else{
+    printf("Switch racine : Non\n");
+  }
+
+  printf("Coût jusqu'à la racine : %d\n", sw->cout);
+
+  printf("Etats des ports (%d) :\n", sw->nb_ports);
+  for(size_t i=0; i<sw->nb_ports; i++){
+    if(sw->etat_ports[i].id_connecte != -1){
+      char* etat = "";
+      if(sw->etat_ports[i].etat == 0){
+        etat = "Racine";
+      }
+      else if(sw->etat_ports[i].etat == 1){
+        etat = "Désigné";
+      }
+      else{
+        etat = "Bloqué";
+      }
+      printf("Port %zu relié à l'équipement %zu : %s\n", i, sw->etat_ports[i].id_connecte, etat);
+    }
+  }
+  printf("\n");
 }

@@ -22,7 +22,7 @@ int main() {
   }
 
   //Echange de trame
-
+  /*
   //Config 2
   mac adr_src = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x01};
   mac adr_dst = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x02};
@@ -30,14 +30,14 @@ int main() {
   char* protocole = "IPv4";
   envoyer_trame(reseau, adr_src, adr_dst, message, protocole);
   message = "Coucou";
-  envoyer_trame(reseau, adr_dst, adr_src, message, protocole);
+  envoyer_trame(reseau, adr_dst, adr_src, message, protocole);*/
 
-  /*Config cycle (config3 et config_cycle)
+  //Config cycle (config3 et config_cycle)
   mac adr_src = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x01};
   mac adr_dst = {0x54, 0xD6, 0xA6, 0x82, 0xC5, 0x08};
   char* message = "Bonjour";
   char* protocole = "IPv4";
-  envoyer_trame(reseau, adr_src, adr_dst, message, protocole);*/
+  envoyer_trame(reseau, adr_src, adr_dst, message, protocole);
   
   //Affichage des tables de commutation
   printf("\n============================\n");
@@ -48,6 +48,16 @@ int main() {
       printf("\n");
     }
   }
+
+  //Affichage des etats des ports
+  printf("\n============================\n");
+  
+  for(size_t i =0; i<reseau->nbEquipements; i++){
+    if(reseau->equipements[i].type == 2){
+      affiche_port_switch(&reseau->equipements[i]);
+    }
+  }
+
 
   //Free du reseau
   deinit_reseau(reseau);
