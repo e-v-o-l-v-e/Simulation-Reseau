@@ -310,13 +310,13 @@ void affiche_port_switch(machine* sw){
 void affiche_infos_station(machine* station){
   printf("Station %zu :\n", station->id);
   printf("   Adresse IP : %s\n", ip_to_string(station->adr_ip));
-  printf("   Adresse MAC : %s\n", mac_to_string_hexa(station->adr_mac));
+  printf("   Adresse MAC : %s\n", mac_to_string(station->adr_mac));
 }
 
 void affiche_infos_switch(machine* sw){
   printf("Switch %zu :\n", sw->id);
   printf("   Adresse IP : %s\n", ip_to_string(sw->adr_ip));
-  printf("   Adresse MAC : %s\n", mac_to_string_hexa(sw->adr_mac));
+  printf("   Adresse MAC : %s\n", mac_to_string(sw->adr_mac));
   printf("\n");
 
   affiche_port_switch(sw);
