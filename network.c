@@ -63,7 +63,7 @@ network* creation_reseau() {
         reseau->equipements[i].etat_ports[j] = (etat_port) {1, -1};
       }
 
-      //init leur id du root
+      //init leur "priorite" du root
       reseau->equipements[i].stp_root |= ((uint64_t) reseau->equipements[i].priorite) << 48;
 
       for (int j = 0; j < 6; j++) {

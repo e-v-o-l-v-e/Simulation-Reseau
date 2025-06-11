@@ -183,11 +183,7 @@ bool parcours_switch_recursif(network* net, machine* equip, sommet id_equip, tra
       printf("[Switch %zu] Destination connue : %s -> port %d\n", id_equip, mac_to_string(t->dest), port_recep);
       printf("\t   Port %d -> équipement %zu\n", port_envoie, id_face);
 
-      bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
-
-      if(essai){
-         return true;
-      }
+      return parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
    }
    else{
       for(uint i=0; i<equip->nb_ports; i++){
@@ -256,14 +252,14 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
 
    //Cherche le switch qui est connecté à la station source
    machine* sw = NULL;
-   sommet swit_ch = -1;
+   sommet switch_id = -1;
    for(size_t i =0; i<net->nbEquipements; i++){
       machine equip = net->equipements[i];
       if(equip.type == 2){                         //Si c'est un switch
          arete a = (arete) {src, i, 0};
          if(existe_arete(net->g, a)){
             sw = &net->equipements[i];
-            swit_ch = i;
+            switch_id = i;
             break;
          }
       }
@@ -287,7 +283,7 @@ void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, 
    printf("\n---------------\n");
    printf("Envoi de la trame...\n");
    printf("----------------\n");
-   bool reussite = parcours_switch_recursif(net, sw, swit_ch, &t, port);
+   bool reussite = parcours_switch_recursif(net, sw, switch_id, &t, port);
 
    //Affiche le retour
    if(!reussite){
