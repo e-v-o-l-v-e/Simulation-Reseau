@@ -12,7 +12,7 @@
 
 - Réutilisation du fichier graphe utilisé en M23 avec rajout du poids sur les arêtes
 
-- Création d'équipements déterminés par leur type (tation, switch, hub) --> certains champs ne sont accessibles qu'à certains type
+- Création d'équipements déterminés par leur type (station, switch, hub) --> certains champs ne sont accessibles qu'à certains type
 
 - Création de trames avec fonction d'envoi qui appelle elle-même une fonction récursive qui transporte la trame dans le graphe jusqu'à destination
 
