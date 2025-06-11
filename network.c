@@ -144,19 +144,19 @@ void string_to_ip(const char *adr, uint32_t *ip) {
 }
 
 char *ip_to_string(const uint32_t ip){
-  char *str = malloc(16);
+  static char str[16];
   sprintf(str, "%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
   return str;
 }
 
 char *mac_to_string(const mac m) {
-  char *str = malloc(18);
+  static char str[18];
   sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x", m[0], m[1], m[2], m[3], m[4], m[5]);
   return str;
 }
 
 char *mac_to_string_hexa(const mac m) {
-  char *str = malloc(18);
+  static char str[18];
   sprintf(str, "%02x %02x %02x %02x %02x %02x", m[0], m[1], m[2], m[3], m[4], m[5]);
   return str;
 }
