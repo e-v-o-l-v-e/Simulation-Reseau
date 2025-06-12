@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-typedef uint8_t mac[6];
+#include "network.h"
 
 typedef struct trame_ethernet {
     uint8_t preambule[7];
@@ -23,5 +22,6 @@ void deinit_trame(trame_ethernet* t);
 
 void afficher_trame(trame_ethernet* t);
 void afficher_trame_hexa(trame_ethernet* t);
-void afficher_mac_user(uint8_t mac[6]);
-void donne_type(char* protocole, uint16_t type);
+void type_to_str(char* protocole, uint16_t type);
+
+void envoyer_trame(network* net, mac adr_src, mac adr_dst, const char* message, const char* protocole);

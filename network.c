@@ -1,20 +1,18 @@
 #include "network.h"
 #include "graphe.h"
+#include "STP.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define LINE_LENGHT 64
 
-int existe_asso(machine* sw, mac adr_mac);
-void ajout_asso(machine* sw, mac adr_mac, uint port);
-
-void creation_reseau() {
+network* creation_reseau() {
   FILE *config;
-  config = fopen("config1", "r");
+  config = fopen("config_cycle.lan", "r");
 
   if (config == NULL) {
     perror("le fichier de configuration n'existe pas ou n'est pas lisible.");
-    return;
+    return NULL;
   }
 
   char line[LINE_LENGHT];
@@ -45,6 +43,7 @@ void creation_reseau() {
              &priorite);
       string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
       string_to_ip(buffer_ip, &reseau->equipements[i].adr_ip);
+      reseau->equipements[i].id = i;
       break;
 
     case 2:
@@ -53,28 +52,30 @@ void creation_reseau() {
       reseau->equipements[i].nb_ports = nombre_ports;
       reseau->equipements[i].priorite = priorite;
       reseau->equipements[i].id = i;
+      reseau->equipements[i].table = malloc(sizeof(association) * (reseau->nbEquipements-1));
+
 
       //on alloue la memoire pour les etats_ports
       reseau->equipements[i].etat_ports = malloc(nombre_ports * sizeof(etat_port));
 
-      //on les met tous en etat inconnu
+      //on les met tous en etat désigné
       for(size_t j=0; j<nombre_ports; j++){
-        reseau->equipements[i].etat_ports[j] = (etat_port) {-1, -1};
+        reseau->equipements[i].etat_ports[j] = (etat_port) {1, -1};
       }
 
-      //init leur id du root
+      //init leur "priorite" du root
       reseau->equipements[i].stp_root |= ((uint64_t) reseau->equipements[i].priorite) << 48;
 
       for (int j = 0; j < 6; j++) {
         reseau->equipements[i].stp_root |= ((uint64_t)reseau->equipements[i].adr_mac[j]) << (40 - 8 * j);
       }
 
-
       break;
 
     case 0:
       sscanf(line, "0;%d", &nombre_ports);
       reseau->equipements[i].nb_ports = nombre_ports;
+      reseau->equipements[i].id = i;
       break;
     }
   };
@@ -85,9 +86,50 @@ void creation_reseau() {
     sscanf(line, "%d;%d;%d", &s1, &s2, &poid);
     arete a = {s1, s2, poid};
     ajouter_arete(g, a);
+
+    //ajout de l'id dans etat_port (s1)
+    machine equip = reseau->equipements[s1];
+    for(size_t j=0; j<equip.nb_ports; j++){
+      if(equip.type == 2 && equip.etat_ports[j].id_connecte == -1){
+        reseau->equipements[s1].etat_ports[j].id_connecte = s2;
+        break;  // on a trouve le premier etat port pas init
+      }
+    }
+
+    //ajout de l'id dans etat_port (s2)
+    machine equip2 = reseau->equipements[s2];
+    for(size_t j=0; j<equip2.nb_ports; j++){
+      if(equip2.type == 2 && equip2.etat_ports[j].id_connecte == -1){
+        reseau->equipements[s2].etat_ports[j].id_connecte = s1;
+        break;  // on a trouve le premier etat port pas init
+      }
+    }
+
   }
 
-  afficher(*reseau);
+  return reseau;
+
+}
+
+void deinit_reseau(network* reseau){
+  //Free de la table d'asso et des etats ports des switchs
+  for(size_t i=0; i<reseau->nbEquipements; i++){
+    if(reseau->equipements[i].type == 2){
+      free(reseau->equipements[i].table);
+      reseau->equipements[i].table = NULL;
+      free(reseau->equipements[i].etat_ports);
+      reseau->equipements[i].etat_ports = NULL;
+    }
+  }
+
+  free(reseau->equipements);
+  reseau->equipements = NULL;
+
+  deinit_graphe(reseau->g);
+  reseau->g = NULL;
+
+  free(reseau);
+  reseau = NULL;
 }
 
 void string_to_mac(const char *adr, uint8_t mac[6]) {
@@ -100,113 +142,183 @@ void string_to_ip(const char *adr, uint32_t *ip) {
   sscanf(adr, "%u.%u.%u.%u", &a, &b, &c, &d);
   *ip = (a << 24) | (b << 16) | (c << 8) | d;
 }
+
+char *ip_to_string(const uint32_t ip){
+  char *str = malloc(16);
+  sprintf(str, "%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
+  return str;
+}
+
 char *mac_to_string(const mac m) {
   char *str = malloc(18);
   sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x", m[0], m[1], m[2], m[3], m[4], m[5]);
   return str;
 }
 
-  void afficher(network reseau) {
+char *mac_to_string_hexa(const mac m) {
+  char *str = malloc(18);
+  sprintf(str, "%02x %02x %02x %02x %02x %02x", m[0], m[1], m[2], m[3], m[4], m[5]);
+  return str;
+}
 
-    graphe *g = reseau.g;
+void afficher(network* reseau) {
+  if(reseau == NULL){
+    printf("nullll\n");
+  }
 
-    printf("# machines = %zu\n", ordre(g));
-    printf("# liens = %zu\n", nb_aretes(g));
+  printf("# machines = %zu\n", ordre(reseau->g));
+  printf("# liens = %zu\n", nb_aretes(reseau->g));
 
-    // Affichage des sommets
-    printf("--EQUIPEMENTS--\n");
+  // Affichage des sommets
+  printf("--EQUIPEMENTS--\n");
 
-    for (size_t i = 0; i < ordre(g); i++) {
-      switch (reseau.equipements[i].type) {
-      case 1:
-        printf("%zu : station, adresse mac : %s (connecté avec : ", i,
-               mac_to_string(reseau.equipements[i].adr_mac));
-        break;
+  for (size_t i = 0; i < ordre(reseau->g); i++) {
+    switch (reseau->equipements[i].type) {
+    case 1:
+      printf("%zu : station, adresse mac : %s (connecté avec : ", i,
+              mac_to_string(reseau->equipements[i].adr_mac));
+      break;
 
-      case 2:
-        printf("%zu : switch, adresse max : %s (connecté avec : ", i,
-               reseau.equipements[i].adr_mac);
-        break;
+    case 2:
+      printf("%zu : switch, adresse mac : %s (connecté avec : ", i,
+              mac_to_string(reseau->equipements[i].adr_mac));
+      break;
 
-      case 0:
-        printf("%zu : hub, connecté à :", i);
-        break;
-      }
-      sommet *sa = malloc(ordre(g) * sizeof(sommet));
+    case 0:
+      printf("%zu : hub, connecté à :", i);
+      break;
+    }
+    sommet *sa = malloc(ordre(reseau->g) * sizeof(sommet));
 
-      size_t nb_adj = sommets_adjacents(g, i, sa);
+    size_t nb_adj = sommets_adjacents(reseau->g, i, sa);
 
-      for (size_t j = 0; j < nb_adj; j++) {
-        printf("%zu ", *(sa + j));
-      }
-      printf(")\n");
+    for (size_t j = 0; j < nb_adj; j++) {
+      printf("%zu ", *(sa + j));
+    }
+    printf(")\n");
 
-      free(sa);
-      sa = NULL;
+    free(sa);
+    sa = NULL;
+  }
+
+  // Affichage des arêtes
+  printf("--LIENS--\n");
+
+  for (size_t i = 0; i < ordre(reseau->g); i++) {
+    sommet *sa = malloc(ordre(reseau->g) * sizeof(sommet));
+
+    size_t nb_adj = sommets_adjacents(reseau->g, i, sa);
+
+    for (size_t j = 0; j < nb_adj; j++) {
+      printf("%zu - %zu\n", i, *(sa + j));
     }
 
-    // Affichage des arêtes
-    printf("--LIENS--\n");
+    free(sa);
+    sa = NULL;
+  }
+  
+  printf("\n");
+}
 
-    for (size_t i = 0; i < ordre(g); i++) {
-      sommet *sa = malloc(ordre(g) * sizeof(sommet));
+size_t degre(graphe const *g, sommet s) {
+  // Retourne le nombre de sommets adjacents à s
+  size_t index_s = index_sommet(g, s);
+  if (index_s == UNKNOWN_INDEX) {
+    return UNKNOWN_INDEX;
+  }
 
-      size_t nb_adj = sommets_adjacents(g, i, sa);
+  sommet *sommets_adj = malloc((ordre(g) - 1) * sizeof(sommet));
 
-      for (size_t j = 0; j < nb_adj; j++) {
-        printf("%zu - %zu\n", i, *(sa + j));
-      }
+  size_t degre = sommets_adjacents(g, s, sommets_adj);
 
-      free(sa);
-      sa = NULL;
+  free(sommets_adj);
+  sommets_adj = NULL;
+
+  return degre;
+}
+
+bool existe_machine(network* net, const mac adr){
+  //Verifie si un equipement du reseau possede cette adresse mac (s'il existe)
+
+  for(size_t i =0; i<net->nbEquipements; i++){
+    machine equip = net->equipements[i];
+    if (memcmp(equip.adr_mac, adr, 6) == 0) {
+        return true;
     }
   }
 
-  size_t degre(graphe const *g, sommet s) {
-    // Retourne le nombre de sommets adjacents à s
-    size_t index_s = index_sommet(g, s);
-    if (index_s == UNKNOWN_INDEX) {
-      return UNKNOWN_INDEX;
-    }
+  return false;
+}
 
-    sommet *sommets_adj = malloc((ordre(g) - 1) * sizeof(sommet));
-
-    size_t degre = sommets_adjacents(g, s, sommets_adj);
-
-    free(sommets_adj);
-    sommets_adj = NULL;
-
-    return degre;
-  }
-
-  int existe_asso(machine* sw, mac adr_mac) {
-    for (int i = 0; i < sw->nb_ports; i++) { //pour chaque case de notre table
-        if (sw->table[i].adr_mac == adr_mac) { //si on a la meme adresse mac
-            return (int)sw->table[i].num_port; //on retroune le port associe a cette adr
-        }
-    }
-    return -1; // Pas trouve
-  }
-
-
-  void ajout_asso(machine* sw, mac adr_mac, uint port) {
-
-      for (int i = 0; i < sw->nb_ports; i++) { //on parcours la table d'asso
-
-          // Verif si la case est vide
-          bool est_vide = true;
-          for (int j = 0; j < 6; j++) { //6 octets
-              if (sw->table[i].adr_mac[j] != 0) { //si un octets n'est pas vide
-                  est_vide = false;
-                  break;//on sort de la boucle for (passe donc a la prochaine case de la table asso)
-              }
-          }
-
-          //si la case est bel et bien vide
-          if (est_vide) {
-              sw->table[i].num_port = port;
-              memcpy(sw->table[i].adr_mac, adr_mac, 6); //copie 6 octets
-              break; //on arrete le parcours de la table
-          }
+int existe_asso(machine* sw, mac adr_mac) {
+  for (int i = 0; i < sw->nb_ports; i++) { //pour chaque case de notre table
+      if (memcmp(sw->table[i].adr_mac, adr_mac, 6) == 0) { //si on a la meme adresse mac
+          return (int)sw->table[i].num_port; //on retroune le port associe a cette adr
       }
   }
+  return -1; // Pas trouve
+}
+
+
+void ajout_asso(machine* sw, mac adr_mac, uint port) {
+  sw->table[sw->nbAsso].num_port = port;
+  memcpy(sw->table[sw->nbAsso].adr_mac, adr_mac, 6); //copie 6 octets
+  sw->nbAsso++;
+}
+
+void affiche_table_commutation(machine* sw){
+  printf("   Table de commutation :\n");
+  if(sw->nbAsso >0){
+    for(size_t i=0; i<sw->nbAsso; i++){
+      printf("     Port %d : %s\n", sw->table[i].num_port, mac_to_string(sw->table[i].adr_mac));
+    }
+  }
+  else{
+    printf("      ...\n");
+  }
+}
+
+void affiche_port_switch(machine* sw){
+  if(sw->id == sw->id_root){
+    printf("   Switch racine : Oui\n");
+  }
+  else{
+    printf("   Switch racine : Non\n");
+  }
+
+  printf("   Coût jusqu'à la racine : %d\n", sw->cout);
+
+  printf("   Etats des ports (%d) :\n", sw->nb_ports);
+  for(size_t i=0; i<sw->nb_ports; i++){
+    if(sw->etat_ports[i].id_connecte != -1){
+      char* etat = "";
+      if(sw->etat_ports[i].etat == 0){
+        etat = "Racine";
+      }
+      else if(sw->etat_ports[i].etat == 1){
+        etat = "Désigné";
+      }
+      else{
+        etat = "Bloqué";
+      }
+      printf("      Port %zu relié à l'équipement %zu : %s\n", i, sw->etat_ports[i].id_connecte, etat);
+    }
+  }
+  printf("\n");
+}
+
+void affiche_infos_station(machine* station){
+  printf("Station %zu :\n", station->id);
+  printf("   Adresse IP : %s\n", ip_to_string(station->adr_ip));
+  printf("   Adresse MAC : %s\n", mac_to_string_hexa(station->adr_mac));
+}
+
+void affiche_infos_switch(machine* sw){
+  printf("Switch %zu :\n", sw->id);
+  printf("   Adresse IP : %s\n", ip_to_string(sw->adr_ip));
+  printf("   Adresse MAC : %s\n", mac_to_string_hexa(sw->adr_mac));
+  printf("\n");
+
+  affiche_port_switch(sw);
+  affiche_table_commutation(sw);
+}

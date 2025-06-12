@@ -121,7 +121,10 @@ int stp(network *net) {
 
           machine switchFace = net->equipements[id_equip_connec];
 
-          if(switchFace.type != 2){
+          if(switchFace.type != 2){         //Si c'est une station en face, on met en désigné
+            if(switchFace.type == 1){
+              sw.etat_ports[port].etat = 1;
+            }
             continue;
           }
 
