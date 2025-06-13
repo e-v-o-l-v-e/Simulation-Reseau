@@ -25,7 +25,6 @@ network* creation_reseau() {
   reseau->nbEquipements = nombre_machines;
   reseau->equipements = malloc(reseau->nbEquipements * sizeof(machine));
   reseau->g = malloc(sizeof(graphe));
-  reseau->g = malloc(sizeof(graphe));
   init_graphe(reseau->g);
   graphe *g = reseau->g;
 
