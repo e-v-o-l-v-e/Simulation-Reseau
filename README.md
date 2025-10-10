@@ -16,13 +16,17 @@ Le programme gère des machines avec adresses MAC, permet l’**envoi de trames*
 ```bash
 git clone https://github.com/AmbreRoise/Simulation_reseau.git
 ```
+2. Sélectionner le fichier de configuration (ligne 11 du fichier network.c) :
+```c
+config = fopen("config1", "r");      //Remplacer config1 par le nom du fichier souhaité
+```
 
-2. Compiler le programme :
+3. Compiler le programme :
 ```bash
 make
 ```
 
-3. Lancer le programme
+4. Lancer le programme
 ```bash
 ./main
 ```
