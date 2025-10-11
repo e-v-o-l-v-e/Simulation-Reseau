@@ -4,6 +4,42 @@
 **Simulation de réseau** en C en console.
 Le programme gère des machines avec adresses MAC, permet l’**envoi de trames** entre ordinateurs et implémente le **protocole STP**.
 
+## 🖼️ Aperçu
+
+```console
+=== Trame Ethernet ===
+54:d6:a6:82:c5:01 -> 54:d6:a6:82:c5:01
+Type : 0x0800 (IPv4)
+Data : Bonjour
+
+---------------
+Envoi de la trame...
+----------------
+
+[Switch 1] Trame reçue via le port 4.
+        Apprentissage : 54:d6:a6:82:c5:01 -> port 4
+[Switch 1] Destination inconnue : 54:d6:a6:82:c5:08 -> diffusion
+           Port 0 -> équipement 0
+
+[Switch 0] Trame reçue via le port 0.
+        Apprentissage : 54:d6:a6:82:c5:01 -> port 0
+[Switch 0] Destination inconnue : 54:d6:a6:82:c5:08 -> diffusion
+           Port 1 -> équipement 2
+
+[Switch 2] Trame reçue via le port 0.
+        Apprentissage : 54:d6:a6:82:c5:01 -> port 0
+[Switch 2] Destination inconnue : 54:d6:a6:82:c5:08 -> diffusion
+           Port 2 -> équipement 6
+
+[Switch 6] Trame reçue via le port 0.
+        Apprentissage : 54:d6:a6:82:c5:01 -> port 0
+[Switch 6] Destination inconnue : 54:d6:a6:82:c5:08 -> diffusion
+           Port 2 -> équipement 14
+
+[Station 14] Trame reçue ! Destination atteinte.
+        Message : Bonjour
+```
+
 ## 🛠️ Technologies
 
 **Langage :** C
