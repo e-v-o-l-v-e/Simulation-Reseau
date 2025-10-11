@@ -61,6 +61,10 @@ int main() {
   char* message = "Bonjour";
   char* protocole = "IPv4";
   envoyer_trame(reseau, adr_src, adr_dst, message, protocole);
+
+
+
+  
   
   //Affichage des tables de commutation
   printf("\n\n------------------------------\n");

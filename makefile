@@ -1,2 +1,2 @@
-test:
-	gcc *.c -o test.o
+main:
+	gcc *.c -o main.o
