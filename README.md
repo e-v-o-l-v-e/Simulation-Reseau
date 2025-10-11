@@ -16,19 +16,20 @@ Le programme gère des machines avec adresses MAC, permet l’**envoi de trames*
 ```bash
 git clone https://github.com/AmbreRoise/Simulation_reseau.git
 ```
-2. Sélectionner le fichier de configuration (ligne 11 du fichier network.c) :
+2. Sélectionner le fichier de configuration (ligne 11 du fichier network.c) -> voir plus bas les fichiers possibles:
 ```c
 config = fopen("config1", "r");      //Remplacer config1 par le nom du fichier souhaité
 ```
+3. Modifier le main en conséquence (en fonction du fichier choisi - se fier aux commentaires du main, mettre en commentaire la configuration non choisie)
 
-3. Compiler le programme :
+4. Compiler le programme :
 ```bash
 make
 ```
 
-4. Lancer le programme
+5. Lancer le programme
 ```bash
-./main
+./main.o
 ```
 
 ## 🚀 Fonctionnalités (Cahier des charges)
@@ -38,6 +39,7 @@ make
 - config1 : réseau simple
 - config2 : réseau plus complexe sans cycle
 - config3 : réseau plus complexe avec cycle
+- config_cyle.lan : semblable a config3
 
 🖥️ **Structure du réseau :** utilisation d’un graphe et d’un tableau d’équipements (indice = sommet du graphe).
 
