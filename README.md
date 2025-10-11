@@ -1,19 +1,50 @@
-# SAE 2.3 Réseau
+# 🌐 Simulation Réseau (C)
+## 📄 Description
 
-./config1 : configuration très simple
+**Simulation de réseau** en C en console.
+Le programme gère des machines avec adresses MAC, permet l’**envoi de trames** entre ordinateurs et implémente le **protocole STP**.
 
-./config2 : configuration plus complexe sans cycle
+## 🛠️ Technologies
 
-./config3 : configuration plus complexe avec cycle
+**Langage :** C
 
-## Explication 
+**Concepts :** Ethernet, adresses MAC, protocole STP, communication entre machines
 
-- Utilisation d'un réseau contenant un graphe, un tableau d'équipements (l'indice dans le tableau représente le sommet dans le graphe) et un nombre d'équipements
+## ⚙️ Installation et lancement
 
-- Réutilisation du fichier graphe utilisé en M23 avec rajout du poids sur les arêtes
+1. Cloner le repository :
+```bash
+git clone https://github.com/AmbreRoise/Simulation_reseau.git
+```
+2. Sélectionner le fichier de configuration (ligne 11 du fichier network.c) :
+```c
+config = fopen("config1", "r");      //Remplacer config1 par le nom du fichier souhaité
+```
 
-- Création d'équipements déterminés par leur type (station, switch, hub) --> certains champs ne sont accessibles qu'à certains type
+3. Compiler le programme :
+```bash
+make
+```
 
-- Création de trames avec fonction d'envoi qui appelle elle-même une fonction récursive qui transporte la trame dans le graphe jusqu'à destination
+4. Lancer le programme
+```bash
+./main
+```
 
-- Création du STP qui choisit un switch root et s'occupe de l'état des ports de chaque switch en conséquence. Utilisation de BPDU sans passer par les trames
+## 🚀 Fonctionnalités (Cahier des charges)
+
+📂 **Configurations prédéfinies :**
+
+- config1 : réseau simple
+- config2 : réseau plus complexe sans cycle
+- config3 : réseau plus complexe avec cycle
+
+🖥️ **Structure du réseau :** utilisation d’un graphe et d’un tableau d’équipements (indice = sommet du graphe).
+
+⚡ **Équipements variés :** création de machines de différents types (station, switch, hub), avec des champs spécifiques selon le type.
+
+📡 **Transmission de trames :** création de trames et envoi via fonction récursive parcourant le graphe jusqu’à la destination.
+
+🔄 **Protocole STP :** sélection d’un switch root, gestion de l’état des ports de chaque switch, utilisation de BPDU sans passer par les trames.
+
+📝 **Documentation interne :** code commenté pour expliquer chaque étape du fonctionnement.
