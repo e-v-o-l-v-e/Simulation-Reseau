@@ -1,2 +1,2 @@
 main:
-	gcc *.c -o main.o
+	gcc *.c -o reseau
